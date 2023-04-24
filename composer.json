@@ -36,7 +36,7 @@
   },
   "autoload": {
     "psr-4": {
-      "UniSharp\\LaravelFilemanager\\": "src/"
+      "Megaads\\LaravelFilemanager\\": "src/"
     }
   },
   "bin": ["bin/debug"],
