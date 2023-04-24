@@ -22,6 +22,78 @@ class UploadController extends LfmController
         $this->errors = [];
     }
 
+    public function customUpload () {
+        // \Log::info($_SERVER['HTTP_REFERER']);
+        
+        $locale = '';
+        if (env('APP_LOCALE') && config('app.upload_by_locale', false)) {
+            $locale = env('APP_LOCALE');
+            if ($locale == '' || empty($locale)) {
+                $locale = '/us';
+            } else {
+                $locale = '/' . $locale;
+            }
+        } else if (!env('APP_LOCALE') && config('app.upload_by_locale', false)) {
+            $locale = '/us';
+        }
+        
+        $retval = [
+            'status' => 'fail',
+            'upload' => []
+        ];
+        $files = request()->file('upload');
+        $isValidate = request()->get('is_validate', true);
+        $date = date('d-m-Y', time());
+        $type = request()->get('type', 'default');
+        $basePath = "/files$locale/$type/$date";
+        // single file
+        if (!is_array($files)) {
+            $file = $files;
+            if (!$this->fileIsValid($file)) {
+                $retval['errors'] = $this->errors;
+                return $retval;
+            }
+
+            $filename = $this->proceedSingleUpload($file, $isValidate);
+            if ($filename === false) {
+                $retval['errors'] = $this->errors;
+                return $retval;
+            } else {
+                $path = $basePath . "/$filename";
+                $filename = config('sa.file_manager_url') . $path;
+                $this->optimizeImage(public_path($path));
+                $retval['upload'] = [$filename];
+            }
+        }
+
+
+        // Multiple files
+        foreach ($files as $file) {
+            if (!$this->fileIsValid($file)) {
+                continue;
+            }
+            $filename = $this->proceedSingleUpload($file, $isValidate);
+            if ($filename !== false) {
+                $path = $basePath . "/$filename";
+                $filename = config('sa.file_manager_url') . $path;
+                $this->optimizeImage(public_path($path));
+                $retval['upload'][] = $filename;
+            }
+        }
+
+        $retval['status'] =  'successful';
+
+        return $retval;
+    }
+
+    public function optimizeImage($pathToImage) {
+        try {
+            exec("jpegoptim --all-progressive --strip-com --strip-xmp --strip-exif --strip-iptc " . $pathToImage);
+        } catch (\Exception $ex) {
+            \Log::info('optimizeImage', [$ex->getMessage() . ' File: ' . $ex->getFile() . ' Line: ' . $ex->getLine()]);
+        }
+    }
+
     /**
      * Upload files
      *
@@ -60,44 +132,55 @@ class UploadController extends LfmController
         return count($this->errors) > 0 ? $this->errors : parent::$success_response;
     }
 
-    private function proceedSingleUpload($file)
+    private function proceedSingleUpload($file, $isValidate = true)
     {
         $new_filename = $this->getNewName($file);
         $new_file_path = parent::getCurrentPath($new_filename);
-
-        event(new ImageIsUploading($new_file_path));
-        try {
-            if (parent::fileIsImage($file) && !in_array($file->getMimeType(), ['image/gif', 'image/svg+xml'])) {
-                // Handle image rotation
-                Image::make($file->getRealPath())
-                    ->orientate() //Apply orientation from exif data
-                    ->save($new_file_path);
-
-                // Generate a thumbnail
-                if (parent::imageShouldHaveThumb($file)) {
-                    $this->makeThumb($new_filename);
+        $array = (explode("/", $new_file_path));
+        unset($array[count($array) - 1]);
+        $path = join("/", $array);
+        $path = urldecode($path);
+        exec("mkdir -p '$path'");
+        if (!$isValidate) {
+            move_uploaded_file($file->getRealPath(), $new_file_path);
+        } else {
+            event(new ImageIsUploading($new_file_path));
+            try {
+                if (
+                    parent::fileIsImage($file)
+                    && !in_array($file->getMimeType(), ['image/gif', 'image/svg+xml', 'image/x-icon', 'image/vnd.adobe.photoshop'])
+                ) {
+                    // Handle image rotation
+                    Image::make($file->getRealPath())
+                        ->orientate() //Apply orientation from exif data
+                        ->save($new_file_path);
+    
+                    // Generate a thumbnail
+                    if (parent::imageShouldHaveThumb($file)) {
+                        $this->makeThumb($new_filename);
+                    }
+                } else {
+                    // Create (move) the file
+                    File::move($file->getRealPath(), $new_file_path);
                 }
-            } else {
-                // Create (move) the file
-                File::move($file->getRealPath(), $new_file_path);
+                if (config('lfm.should_change_file_mode', true)) {
+                    chmod($new_file_path, config('lfm.create_file_mode', 0644));
+                }
+            } catch (\Exception $e) {
+                array_push($this->errors, parent::error('invalid'));
+    
+                Log::error($e->getMessage(), [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+    
+                return false;
             }
-            if (config('lfm.should_change_file_mode', true)) {
-                chmod($new_file_path, config('lfm.create_file_mode', 0644));
-            }
-        } catch (\Exception $e) {
-            array_push($this->errors, parent::error('invalid'));
-
-            Log::error($e->getMessage(), [
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return false;
+    
+            // TODO should be "FileWasUploaded"
+            event(new ImageWasUploaded(realpath($new_file_path)));
         }
-
-        // TODO should be "FileWasUploaded"
-        event(new ImageWasUploaded(realpath($new_file_path)));
 
         return $new_filename;
     }
@@ -172,7 +255,8 @@ class UploadController extends LfmController
         } elseif (config('lfm.alphanumeric_filename') === true) {
             $new_filename = preg_replace('/[^A-Za-z0-9\-\']/', '_', $new_filename);
         }
-
+        $origin_name = trim($this->pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $new_filename = str_slug($origin_name) . '-' .  $new_filename;
         return $new_filename . $this->replaceInsecureSuffix('.' . $file->getClientOriginalExtension());
     }
 
