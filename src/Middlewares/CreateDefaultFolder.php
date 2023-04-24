@@ -3,7 +3,7 @@
 namespace Megaads\LaravelFilemanager\Middlewares;
 
 use Closure;
-use UniSharp\LaravelFilemanager\Traits\LfmHelpers;
+use Megaads\LaravelFilemanager\Traits\LfmHelpers;
 
 class CreateDefaultFolder
 {

@@ -2,7 +2,7 @@
 
 namespace Megaads\LaravelFilemanager\Controllers;
 
-use UniSharp\LaravelFilemanager\Traits\LfmHelpers;
+use Megaads\LaravelFilemanager\Traits\LfmHelpers;
 
 /**
  * Class LfmController.

@@ -3,8 +3,8 @@
 namespace Megaads\LaravelFilemanager\Controllers;
 
 use Intervention\Image\Facades\Image;
-use UniSharp\LaravelFilemanager\Events\ImageIsResizing;
-use UniSharp\LaravelFilemanager\Events\ImageWasResized;
+use Megaads\LaravelFilemanager\Events\ImageIsResizing;
+use Megaads\LaravelFilemanager\Events\ImageWasResized;
 
 /**
  * Class ResizeController.

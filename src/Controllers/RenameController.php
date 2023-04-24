@@ -3,10 +3,10 @@
 namespace Megaads\LaravelFilemanager\Controllers;
 
 use Illuminate\Support\Facades\File;
-use UniSharp\LaravelFilemanager\Events\ImageIsRenaming;
-use UniSharp\LaravelFilemanager\Events\ImageWasRenamed;
-use UniSharp\LaravelFilemanager\Events\FolderIsRenaming;
-use UniSharp\LaravelFilemanager\Events\FolderWasRenamed;
+use Megaads\LaravelFilemanager\Events\ImageIsRenaming;
+use Megaads\LaravelFilemanager\Events\ImageWasRenamed;
+use Megaads\LaravelFilemanager\Events\FolderIsRenaming;
+use Megaads\LaravelFilemanager\Events\FolderWasRenamed;
 
 /**
  * Class RenameController.

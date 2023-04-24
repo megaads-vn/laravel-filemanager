@@ -3,8 +3,8 @@
 namespace Megaads\LaravelFilemanager\Controllers;
 
 use Illuminate\Support\Facades\File;
-use UniSharp\LaravelFilemanager\Events\ImageIsDeleting;
-use UniSharp\LaravelFilemanager\Events\ImageWasDeleted;
+use Megaads\LaravelFilemanager\Events\ImageIsDeleting;
+use Megaads\LaravelFilemanager\Events\ImageWasDeleted;
 
 /**
  * Class CropController.

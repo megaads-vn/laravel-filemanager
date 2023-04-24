@@ -3,8 +3,8 @@
 namespace Megaads\LaravelFilemanager\Controllers;
 
 use Intervention\Image\Facades\Image;
-use UniSharp\LaravelFilemanager\Events\ImageIsCropping;
-use UniSharp\LaravelFilemanager\Events\ImageWasCropped;
+use Megaads\LaravelFilemanager\Events\ImageIsCropping;
+use Megaads\LaravelFilemanager\Events\ImageWasCropped;
 
 /**
  * Class CropController.
