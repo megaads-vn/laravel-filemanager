@@ -1,6 +1,6 @@
 <?php
 
-namespace UniSharp\LaravelFilemanager\Controllers;
+namespace Megaads\LaravelFilemanager\Controllers;
 
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;

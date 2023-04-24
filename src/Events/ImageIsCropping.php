@@ -1,6 +1,6 @@
 <?php
 
-namespace UniSharp\LaravelFilemanager\Events;
+namespace Megaads\LaravelFilemanager\Events;
 
 class ImageIsCropping
 {

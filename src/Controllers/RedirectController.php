@@ -1,6 +1,6 @@
 <?php
 
-namespace UniSharp\LaravelFilemanager\Controllers;
+namespace Megaads\LaravelFilemanager\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;

@@ -1,6 +1,6 @@
 <?php
 
-namespace UniSharp\LaravelFilemanager\Controllers;
+namespace Megaads\LaravelFilemanager\Controllers;
 
 use Intervention\Image\Facades\Image;
 use UniSharp\LaravelFilemanager\Events\ImageIsCropping;
