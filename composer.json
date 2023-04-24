@@ -37,16 +37,9 @@
   "autoload": {
     "psr-4": {
       "Megaads\\LaravelFilemanager\\": "src/"
-    }
-  },
-  "bin": ["bin/debug"],
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Megaads\\LaravelFilemanager\\LaravelFilemanagerServiceProvider"
-      ],
-      "aliases": {
-      }
-    }
+    },
+    "classmap": [
+      "src"
+    ]
   }
 }
